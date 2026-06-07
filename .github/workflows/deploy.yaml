@@ -1,0 +1,70 @@
+name: Test API Endpoint
+
+on:
+  workflow_dispatch:
+    inputs:
+      prompt_input:
+        description: 'The text prompt to send to the /analyze endpoint'
+        required: true
+        default: 'Analyze this sample text for safety and sentiment.'
+
+jobs:
+  test-endpoint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Start Uvicorn Server
+      env:
+        AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+        AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+        AZURE_OPENAI_API_VERSION: "2024-12-01-preview"
+        AZURE_CONTENT_SAFETY_KEY: ${{ secrets.AZURE_CONTENT_SAFETY_KEY }}
+        AZURE_CONTENT_SAFETY_ENDPOINT: ${{ secrets.AZURE_CONTENT_SAFETY_ENDPOINT }}
+        PORT: 8000
+      run: |
+        nohup uvicorn api.main:app --host 0.0.0.0 --port 8000 > uvicorn.log 2>&1 &
+        echo "Waiting for Uvicorn to start..."
+        sleep 5
+
+    - name: Call /analyze Endpoint & Print Output
+      run: |
+        echo "Sending prompt: '${{ github.event.inputs.prompt_input }}'"
+        
+        # Make the request, output response to response.json, and capture HTTP status code
+        RESPONSE_STATUS=$(curl -s -w "%{http_code}" -X POST "http://localhost:8000/analyze" \
+          -H "Content-Type: application/json" \
+          -d "{\"prompt\": \"${{ github.event.inputs.prompt_input }}\"}" \
+          -o response.json)
+        
+        echo "----------------------------------------"
+        echo "HTTP Status Code: $RESPONSE_STATUS"
+        echo "----------------------------------------"
+        echo "API Response Payload:"
+        
+        # Format and print the JSON output nicely in the log
+        if [ -s response.json ]; then
+          cat response.json | jq '.' || cat response.json
+        else
+          echo "Empty response body received."
+        fi
+        echo "----------------------------------------"
+        
+        # Fail the GitHub Action step if the HTTP status code is not 200
+        if [ "$RESPONSE_STATUS" -ne 200 ]; then
+          echo "Error: API call failed with status $RESPONSE_STATUS"
+          exit 1
+        fi

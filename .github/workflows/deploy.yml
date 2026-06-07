@@ -1,0 +1,62 @@
+name: Deploy ThreatScout to Azure Web App
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+# Required for OIDC login — no passwords or publish profiles needed
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Login to Azure using OIDC federated credentials (no passwords, no publish profile)
+      # Requires 3 secrets: AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # Set all env vars on the Web App (runs on every deploy — idempotent)
+      - name: Set App Settings
+        run: |
+          az webapp config appsettings set \
+            --name threat-scout-app \
+            --resource-group rg-build-local-demo \
+            --settings \
+              AZURE_OPENAI_API_KEY="${{ secrets.AZURE_OPENAI_API_KEY }}" \
+              AZURE_OPENAI_ENDPOINT="${{ secrets.AZURE_OPENAI_ENDPOINT }}" \
+              AZURE_OPENAI_DEPLOYMENT_NAME="${{ secrets.AZURE_OPENAI_DEPLOYMENT_NAME }}" \
+              AZURE_OPENAI_API_VERSION="${{ secrets.AZURE_OPENAI_API_VERSION }}" \
+              AZURE_CONTENT_SAFETY_KEY="${{ secrets.AZURE_CONTENT_SAFETY_KEY }}" \
+              AZURE_CONTENT_SAFETY_ENDPOINT="${{ secrets.AZURE_CONTENT_SAFETY_ENDPOINT }}" \
+              WEBSITES_PORT="8000" \
+              PORT="8000" \
+              SCM_DO_BUILD_DURING_DEPLOYMENT="true"
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: threat-scout-app
+          package: .
