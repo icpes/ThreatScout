@@ -51,6 +51,7 @@ jobs:
               AZURE_OPENAI_API_VERSION="${{ secrets.AZURE_OPENAI_API_VERSION }}" \
               AZURE_CONTENT_SAFETY_KEY="${{ secrets.AZURE_CONTENT_SAFETY_KEY }}" \
               AZURE_CONTENT_SAFETY_ENDPOINT="${{ secrets.AZURE_CONTENT_SAFETY_ENDPOINT }}" \
+              ADMIN_PASSWORD="${{ secrets.ADMIN_PASSWORD }}" \
               WEBSITES_PORT="8000" \
               PORT="8000" \
               SCM_DO_BUILD_DURING_DEPLOYMENT="true"

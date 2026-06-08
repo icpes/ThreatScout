@@ -8,7 +8,7 @@
 
 ## 🎯 Hackathon Submission
 
-**Live Demo:** https://threat-scout-app.azurewebsites.net  
+**Live Demo:** https://threat-scout-app-d7ecc9a0afh4aac3.centralindia-01.azurewebsites.net/  
 **Judge Credentials:**
 - Username: `ADMIN`  
 - Password: Mentioned in instruction set for project submission

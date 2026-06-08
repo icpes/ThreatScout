@@ -43,7 +43,11 @@ app = FastAPI(
 # Auth — simple session-token gate for hackathon assessor access
 # ---------------------------------------------------------------------------
 _ADMIN_USERNAME: str = "ADMIN"
-_ADMIN_PASSWORD: str = "Sw@rm$3cur!ty#2026XkP9mQzLnR@Bd5"   # 32 chars
+# Read admin password from environment to avoid committing secrets in source.
+# Deployment must set the ADMIN_PASSWORD environment variable (e.g., Azure App
+# Settings or container secret). Local development can use a .env file but do
+# NOT commit that file to git.
+_ADMIN_PASSWORD: str = os.environ.get("ADMIN_PASSWORD", "")
 _ACTIVE_TOKENS: set[str] = set()
 
 
