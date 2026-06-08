@@ -8,7 +8,7 @@
 
 ## 🎯 Hackathon Submission
 
-**Live Demo:** https://threat-scout-app-d7ecc9a0afh4aac3.centralindia-01.azurewebsites.net/  
+**Live Demo:** Mentioned in instruction set for project submission
 **Judge Credentials:**
 - Username: `ADMIN`  
 - Password: Mentioned in instruction set for project submission
@@ -147,7 +147,7 @@ Push to Azure App Service with your preferred deployment method (Git, ZIP, or VS
 
 ## Live Demo
 
-**URL:** https://threat-scout-app.azurewebsites.net  
+**URL:** Mentioned in instruction set for project submission 
 **Login credentials:** Contact admin for access.
 
 ### Test prompts
